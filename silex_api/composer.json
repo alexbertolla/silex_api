@@ -1,0 +1,14 @@
+{
+    "require": {
+        "silex/silex": "^2.0"
+    },
+    "minimun-stability": "dev",
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "autoload": {
+        "psr-0": {
+            "SON": "src/"
+        }
+    }
+}
