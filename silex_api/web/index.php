@@ -1,30 +1,54 @@
 <?php
 
 /**
- * Nessa fase do projeto, você instalará o Silex e criará 1 rotas principal, 
- * apenas para garantir que tudo está configurado e funcionando.
+ * Utilizando os mesmos conceitos apresentados sobre a criação de novos serviços, 
+ * crie um serviço que seja capaz de administrar uma simples table de produtos 
+ * com o seguintes campos: (id, nome, descrição e valor).
 
-  1)Rota: /clientes
-
-  Com a rota /clientes, faça a simulação da listagem de clientes com Nome,
- * Email e CPF/CNPJ vindo de um array. O formato de exibição deve ser json.
+ * Após a criação do serviço, faça o registro do mesmo no container de serviço do 
+ * Silex.
  */
+use code\service\ProdutoService;
+
 require_once '../vendor/autoload.php';
 
 $app = new \Silex\Application();
 $app['debug'] = TRUE;
 
-$clientes = array(
-    array('cpf' => '6575323', 'nome' => 'Alex', 'email' => 'alex@alex.com'),
-    array('cpf' => '7859883', 'nome' => 'Sabrina', 'email' => 'sabrina@sabrina.com'),
-    array('cpf' => '8482930', 'nome' => 'Gustavo', 'email' => 'gu@gustavo.com'),
-    array('cpf' => '8940273', 'nome' => 'Ivo', 'email' => 'ivo@ivo.com'),
+$produtos = array(
+    array('id' => '1', 'nome' => 'livro', 'descricao' => 'livro capa dura', 'valor' => 30.00),
+    array('id' => '2', 'nome' => 'caderno', 'descricao' => 'scaderno 100 folhar', 'valor' => 20, 00),
+    array('id' => '3', 'nome' => 'caneta', 'descricao' => 'caneta azul', 'valor' => 1.50),
+    array('id' => '4', 'nome' => 'lapis', 'descricao' => 'labis 2.0', 'valor' => 1.20),
 );
+
+
+$app['produtoService'] = function () {
+    return new ProdutoService();
+};
+
 $response = new Symfony\Component\HttpFoundation\Response();
 
-$app->get('/clientes', function () use($clientes, $response) {
-    $response->setContent(json_encode($clientes));
+$app->get('/produtos/inserir', function () use($produtos, $app) {
+    $mensagem = '';
+    foreach ($produtos as $produto) {
+        $app['produtoService']->inserirProduto($produto);
+        $mensagem .= "Produto {$produto['nome']} inserido <br>";
+    }
+    echo $mensagem;
+});
+
+
+$app->get('/produtos/listar', function () use($app, $response) {
+    $lista = $app['produtoService']->listarProdutos();
+    $response->setContent(json_encode($lista));
     return $response;
 });
 
+$app->get('/produtos/criarTabela', function () use($app) {
+    $app['produtoService']->criarTabela();
+    echo 'Tabela criada com sucesso!';
+});
+
 $app->run();
+
