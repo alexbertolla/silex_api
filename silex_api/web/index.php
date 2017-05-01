@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Utilizando os mesmos conceitos apresentados sobre a criação de novos serviços, 
- * crie um serviço que seja capaz de administrar uma simples table de produtos 
- * com o seguintes campos: (id, nome, descrição e valor).
-
- * Após a criação do serviço, faça o registro do mesmo no container de serviço do 
- * Silex.
+ * Agora que você já possui os serviços criados e sendo persistidos no banco dados, 
+ * faça uma interface HTML de um CRUD (Operações de Criar, Recuperar, Alterar e Remover) 
+ * utilizando esses serviços utilizando o Twig.
+ * Lembrando que você obrigatóriamente terá de utilizar: 
+ * Layouts e o UrlGenerator para fazer o link entre as páginas. 
+ * Para facilitar o design da aplicação, utilize um tema básico do Twitter Bootstrap.
  */
 use code\service\ProdutoService;
 
@@ -14,6 +14,13 @@ require_once '../vendor/autoload.php';
 
 $app = new \Silex\Application();
 $app['debug'] = TRUE;
+
+$app->register(new Silex\Provider\TwigServiceProvider(), array(
+    'twig.path' => '../views',
+));
+
+$app->register(new \Silex\Provider\RoutingServiceProvider());
+
 
 $produtos = array(
     array('id' => '1', 'nome' => 'livro', 'descricao' => 'livro capa dura', 'valor' => 30.00),
@@ -29,26 +36,43 @@ $app['produtoService'] = function () {
 
 $response = new Symfony\Component\HttpFoundation\Response();
 
-$app->get('/produtos/inserir', function () use($produtos, $app) {
-    $mensagem = '';
-    foreach ($produtos as $produto) {
-        $app['produtoService']->inserirProduto($produto);
-        $mensagem .= "Produto {$produto['nome']} inserido <br>";
+
+$app->get('/', function () use($app, $response) {
+    $listaProdutos = $app['produtoService']->listarProdutos();
+    $response->setContent(json_encode($listaProdutos));
+    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
+})->bind('listarProdutos');
+
+
+$app->get('/cadastrarProduto/{id}', function ($id) use($app, $response) {
+    $produto = $app['produtoService']->buscarPorId($id);
+    if ($produto) {
+        $response->setContent(json_encode($produto));
+        return $app['twig']->render('formProduto.twig', ['id' => $produto->id, 'nome' => $produto->nome, 'descricao' => $produto->descricao, 'valor' => $produto->valor]);
+    } else {
+        return $app['twig']->render('formProduto.twig', ['id' => '', 'nome' => '', 'descricao' => '', 'valor' => '']);
     }
-    echo $mensagem;
-});
+})->bind('cadastrarProduto');
 
+$app->get('/salvarProduto/', function () use($app, $response) {
+    $get = filter_input_array(INPUT_GET);
+    if ($get['id']) {
+        $app['produtoService']->alterarProduto($get['id'], $get['nome'], $get['descricao'], $get['valor']);
+    } else {
+        $app['produtoService']->inserirProduto($get['nome'], $get['descricao'], $get['valor']);
+    }
 
-$app->get('/produtos/listar', function () use($app, $response) {
-    $lista = $app['produtoService']->listarProdutos();
-    $response->setContent(json_encode($lista));
-    return $response;
-});
+    $listaProdutos = $app['produtoService']->listarProdutos();
+    $response->setContent(json_encode($listaProdutos));
+    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
+})->bind('salvarProduto');
 
-$app->get('/produtos/criarTabela', function () use($app) {
-    $app['produtoService']->criarTabela();
-    echo 'Tabela criada com sucesso!';
-});
+$app->get('/excluirProduto/{id}', function ($id) use($app, $response) {
+    $app['produtoService']->excluirProduto($id);
+    $listaProdutos = $app['produtoService']->listarProdutos();
+    $response->setContent(json_encode($listaProdutos));
+    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
+})->bind('excluirProduto');
 
 $app->run();
 

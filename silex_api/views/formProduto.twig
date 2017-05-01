@@ -1,0 +1,24 @@
+<form method="get" action="{{path('salvarProduto')}}">
+    <input type="text" name="id" value="{{id}}"/>
+    <table>
+        <tr>
+            <td>
+                <label>Nome:</label>
+                <input type="text" name="nome" value="{{nome}}">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Descrição:</label>
+                <input type="text" name="descricao" value="{{descricao}}">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Valor:</label>
+                <input type="text" name="valor" value="{{valor}}">
+            </td>
+        </tr>
+        <tr><td><button type="submit">Salvar</button>
+    </table>
+</form>

@@ -18,15 +18,32 @@ use code\mapper\ProdutoMapper;
  */
 class ProdutoService {
 
-    public function inserirProduto(array $produtoArray) {
+    public function inserirProduto($nome, $descricao, $valor) {
         $produto = new Produto();
-        $produto->setId($produtoArray['id']);
-        $produto->setNome($produtoArray['nome']);
-        $produto->setDescricao($produtoArray['descricao']);
-        $produto->setValor($produtoArray['valor']);
+        $produto->setNome($nome);
+        $produto->setDescricao($descricao);
+        $produto->setValor($valor);
 
         $produtoMapper = new ProdutoMapper();
         $result = $produtoMapper->inserirProduto($produto);
+        return $result;
+    }
+
+    public function alterarProduto($id, $nome, $descricao, $valor) {
+        $produto = new Produto();
+        $produto->setId($id);
+        $produto->setNome($nome);
+        $produto->setDescricao($descricao);
+        $produto->setValor($valor);
+
+        $produtoMapper = new ProdutoMapper();
+        $result = $produtoMapper->alterarProduto($produto);
+        return $result;
+    }
+    
+    public function excluirProduto($id){
+        $produtoMapper = new ProdutoMapper();
+        $result = $produtoMapper->excluirProduto($id);
         return $result;
     }
 
@@ -38,6 +55,11 @@ class ProdutoService {
     public function criarTabela() {
         $produtoMapper = new ProdutoMapper();
         return $produtoMapper->cirarTabela();
+    }
+
+    public function buscarPorId($id) {
+        $produtoMapper = new ProdutoMapper();
+        return $produtoMapper->buscarPorId($id);
     }
 
 }

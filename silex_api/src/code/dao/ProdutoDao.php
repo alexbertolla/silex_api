@@ -32,7 +32,8 @@ class ProdutoDao {
 
     function criarTabela($conn) {
         self::$conn = $conn;
-        $createTable = "CREATE TABLE produtos ( 
+        $createTable = "DROP TABLE IF EXISTS produtos;
+            CREATE TABLE produtos ( 
             id INT NOT NULL AUTO_INCREMENT, 
             nome VARCHAR(45) NULL, 
             descricao VARCHAR(255) NULL, 
@@ -44,11 +45,18 @@ class ProdutoDao {
     public function inserirProduto(Produto $produto, $conn) {
         self::$conn = $conn;
         $sqlInsert = "INSERT INTO produtos (nome, descricao, valor) "
-                . " VALUES(:nome, :descricao, :valor)";
+                . " VALUES('{$produto->getNome()}', '{$produto->getDescricao()}', {$produto->getValor()})";
         $smt = self::$conn->prepare($sqlInsert);
-        $smt->bindParam('nome', $produto->getNome());
-        $smt->bindParam('descricao', $produto->getDescricao());
-        $smt->bindParam('valor', $produto->getValor());
+//        $smt->bindParam('nome', $produto->getNome());
+//        $smt->bindParam('descricao', $produto->getDescricao());
+//        $smt->bindParam('valor', $produto->getValor());
+        return $smt->execute();
+    }
+
+    public function excluirProduto($id, $conn) {
+        self::$conn = $conn;
+        $sql = "DELETE FROM produtos WHERE id = {$id};";
+        $smt = self::$conn->prepare($sql);
         return $smt->execute();
     }
 
@@ -58,6 +66,25 @@ class ProdutoDao {
         $stm = self::$conn->prepare($sql);
         $stm->execute();
         return $stm->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function buscarPorId($id, $conn) {
+        self::$conn = $conn;
+        $sql = "SELECT * FROM produtos WHERE id = {$id}";
+        $stm = self::$conn->prepare($sql);
+        $stm->execute();
+        return $stm->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function alterarProduto(Produto $produto, $conn) {
+        self::$conn = $conn;
+        $sql = "UPDATE produtos"
+                . " SET nome = '{$produto->getNome()}',"
+                . " descricao = '{$produto->getDescricao()}',"
+                . " valor = '{$produto->getValor()}'"
+                . " WHERE id = {$produto->getId()};";
+        $stm = self::$conn->prepare($sql);
+        return $stm->execute();
     }
 
 }

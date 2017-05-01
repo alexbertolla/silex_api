@@ -1,0 +1,16 @@
+<table>
+    <thead><th>Nome</th><th>Descrição</th><th>Valor</th></thead>
+<tbody>
+<p><a href="{{path('cadastrarProduto',{'id':0})}}">Novo</a></p>
+{% for produto in produtos%}
+    <tr>
+        <td><a href="{{path('cadastrarProduto',{
+                                    'id':produto.id
+                                })}}">{{produto.nome}}</a></td>
+        <td>{{produto.descricao}}</td>
+        <td>{{produto.valor}}</td>
+        <td><a href="{{path('excluirProduto',{'id':produto.id})}}">Excluir</a></td>
+    </tr>
+{% endfor%}
+</tbody>
+</table>
