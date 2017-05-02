@@ -54,8 +54,8 @@ $app->get('/cadastrarProduto/{id}', function ($id) use($app, $response) {
     }
 })->bind('cadastrarProduto');
 
-$app->get('/salvarProduto/', function () use($app, $response) {
-    $get = filter_input_array(INPUT_GET);
+$app->post('/salvarProduto/', function () use($app, $response) {
+    $get = filter_input_array(INPUT_POST);
     if ($get['id']) {
         $app['produtoService']->alterarProduto($get['id'], $get['nome'], $get['descricao'], $get['valor']);
     } else {
