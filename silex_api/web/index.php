@@ -1,14 +1,12 @@
 <?php
 
 /**
- * Agora que você já possui os serviços criados e sendo persistidos no banco dados, 
- * faça uma interface HTML de um CRUD (Operações de Criar, Recuperar, Alterar e Remover) 
- * utilizando esses serviços utilizando o Twig.
- * Lembrando que você obrigatóriamente terá de utilizar: 
- * Layouts e o UrlGenerator para fazer o link entre as páginas. 
- * Para facilitar o design da aplicação, utilize um tema básico do Twitter Bootstrap.
+ * Agora que você já desenvolveu uma aplicação que possui: Camada de Serviços e Interface utilizando o Twig, disponibilize uma API REST, para que softwares externos possam consumir.
+
+ * Você deverá disponibilizar as seguintes funções: Listar tudo, listar apenas 1, criar, alterar e remover.
  */
 use code\service\ProdutoService;
+use Symfony\Component\HttpFoundation\Request;
 
 require_once '../vendor/autoload.php';
 
@@ -22,7 +20,7 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 $app->register(new \Silex\Provider\RoutingServiceProvider());
 
 
-$produtos = array(
+$arrayProdutos = array(
     array('id' => '1', 'nome' => 'livro', 'descricao' => 'livro capa dura', 'valor' => 30.00),
     array('id' => '2', 'nome' => 'caderno', 'descricao' => 'scaderno 100 folhar', 'valor' => 20, 00),
     array('id' => '3', 'nome' => 'caneta', 'descricao' => 'caneta azul', 'valor' => 1.50),
@@ -36,43 +34,45 @@ $app['produtoService'] = function () {
 
 $response = new Symfony\Component\HttpFoundation\Response();
 
+$app->get('/api/produtos/criarTabela', function () use ($app, $arrayProdutos) {
+    $criarTabela = $app['produtoService']->criarTabela($arrayProdutos);
+    return $app->json($criarTabela);
+});
 
-$app->get('/', function () use($app, $response) {
+$app->get('/api/produtos', function () use ($app) {
     $listaProdutos = $app['produtoService']->listarProdutos();
-    $response->setContent(json_encode($listaProdutos));
-    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
-})->bind('listarProdutos');
+    return $app->json($listaProdutos);
+});
+
+$app->get('/api/produtos/{id}', function ($id) use ($app) {
+    $listaProdutos = $app['produtoService']->buscarPorId($id);
+    return $app->json($listaProdutos);
+});
 
 
-$app->get('/cadastrarProduto/{id}', function ($id) use($app, $response) {
-    $produto = $app['produtoService']->buscarPorId($id);
-    if ($produto) {
-        $response->setContent(json_encode($produto));
-        return $app['twig']->render('formProduto.twig', ['id' => $produto->id, 'nome' => $produto->nome, 'descricao' => $produto->descricao, 'valor' => $produto->valor]);
-    } else {
-        return $app['twig']->render('formProduto.twig', ['id' => '', 'nome' => '', 'descricao' => '', 'valor' => '']);
-    }
-})->bind('cadastrarProduto');
+$app->post('/api/produtos', function (Request $request) use ($app) {
+    $nome = $request->request->get('nome');
+    $descricao = $request->request->get('descricao');
+    $valor = $request->request->get('valor');
 
-$app->post('/salvarProduto/', function () use($app, $response) {
-    $get = filter_input_array(INPUT_POST);
-    if ($get['id']) {
-        $app['produtoService']->alterarProduto($get['id'], $get['nome'], $get['descricao'], $get['valor']);
-    } else {
-        $app['produtoService']->inserirProduto($get['nome'], $get['descricao'], $get['valor']);
-    }
+    $resultado = $app['produtoService']->inserirProduto($nome, $descricao, $valor);
+    return $app->json($resultado);
+});
 
-    $listaProdutos = $app['produtoService']->listarProdutos();
-    $response->setContent(json_encode($listaProdutos));
-    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
-})->bind('salvarProduto');
+$app->put('/api/produtos/{id}', function (Request $request, $id) use ($app) {
+    $nome = $request->request->get('nome');
+    $descricao = $request->request->get('descricao');
+    $valor = $request->request->get('valor');
 
-$app->get('/excluirProduto/{id}', function ($id) use($app, $response) {
-    $app['produtoService']->excluirProduto($id);
-    $listaProdutos = $app['produtoService']->listarProdutos();
-    $response->setContent(json_encode($listaProdutos));
-    return $app['twig']->render('listarProdutos.twig', ['produtos' => $listaProdutos]);
-})->bind('excluirProduto');
+    $resultado = $app['produtoService']->alterarProduto($id, $nome, $descricao, $valor);
+    return $app->json($resultado);
+});
+
+$app->delete('/api/produtos/{id}', function ($id) use ($app) {
+
+    $resultado = $app['produtoService']->excluirProduto($id);
+    return $app->json($resultado);
+});
 
 $app->run();
 

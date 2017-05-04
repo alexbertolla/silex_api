@@ -8,6 +8,7 @@
 
 namespace code\service;
 
+
 use code\entity\Produto;
 use code\mapper\ProdutoMapper;
 
@@ -26,7 +27,8 @@ class ProdutoService {
 
         $produtoMapper = new ProdutoMapper();
         $result = $produtoMapper->inserirProduto($produto);
-        return $result;
+        $retorno['mensagem'] = ($result) ? 'Dados inseridos com sucesso' : 'Erro ao inserir dados';
+        return $retorno;
     }
 
     public function alterarProduto($id, $nome, $descricao, $valor) {
@@ -38,13 +40,20 @@ class ProdutoService {
 
         $produtoMapper = new ProdutoMapper();
         $result = $produtoMapper->alterarProduto($produto);
-        return $result;
+        $retorno['mensagem'] = ($result) ? 'Dados alterados com sucesso' : 'Erro ao alterar dados';
+        return $retorno;
     }
-    
-    public function excluirProduto($id){
+
+    public function excluirProduto($id) {
         $produtoMapper = new ProdutoMapper();
         $result = $produtoMapper->excluirProduto($id);
-        return $result;
+        $retorno['mensagem'] = ($result) ? 'Dados excluídos com sucesso' : 'Erro ao excluir dados';
+        return $retorno;
+    }
+
+    public function buscarPorId($id) {
+        $produtoMapper = new ProdutoMapper();
+        return $produtoMapper->buscarPorId($id);
     }
 
     public function listarProdutos() {
@@ -52,14 +61,24 @@ class ProdutoService {
         return $produtoMapper->listarProdutos();
     }
 
-    public function criarTabela() {
+    public function criarTabela($arrayProdutos) {
         $produtoMapper = new ProdutoMapper();
-        return $produtoMapper->cirarTabela();
+        $result = FALSE;
+        
+        if ($produtoMapper->cirarTabela()) {
+            $result = $this->inserirProdutos($arrayProdutos);
+        }
+
+        $retorno['mensagem'] = ($result) ? 'Tabela criada com sucesso' : 'Erro ao criar tabela';
+        return $retorno;
     }
 
-    public function buscarPorId($id) {
-        $produtoMapper = new ProdutoMapper();
-        return $produtoMapper->buscarPorId($id);
+    public function inserirProdutos($produtos) {
+        $retorno = FALSE;
+        foreach ($produtos as $produto) {
+            $retorno = $this->inserirProduto($produto['nome'], $produto['descricao'], $produto['valor']);
+        }
+        return $retorno;
     }
 
 }

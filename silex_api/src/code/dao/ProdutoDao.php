@@ -39,13 +39,14 @@ class ProdutoDao {
             descricao VARCHAR(255) NULL, 
             valor DECIMAL(10,2) NULL, 
             PRIMARY KEY (`id`));";
-        return self::$conn->exec($createTable);
+        $insert = self::$conn->query($createTable);
+        return ($insert) ? TRUE : FALSE;
     }
 
     public function inserirProduto(Produto $produto, $conn) {
         self::$conn = $conn;
         $sqlInsert = "INSERT INTO produtos (nome, descricao, valor) "
-                . " VALUES('{$produto->getNome()}', '{$produto->getDescricao()}', {$produto->getValor()})";
+        . " VALUES('{$produto->getNome()}', '{$produto->getDescricao()}', {$produto->getValor()})";
         $smt = self::$conn->prepare($sqlInsert);
 //        $smt->bindParam('nome', $produto->getNome());
 //        $smt->bindParam('descricao', $produto->getDescricao());
